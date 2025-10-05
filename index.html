@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>S-Grade - Sistem Peringkat Siswa</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 S-Grade</h1>
+            <p>Sistem Peringkat Siswa Modern</p>
+        </div>
+
+        <div class="content">
+            <div class="form-section">
+                <div class="form-title">
+                    📋 Daftar Data Siswa
+                </div>
+
+                <div class="main-actions">
+                    <div class="action-row">
+                        <div class="action-group">
+                            <label for="classSelector">Pilih Kelas:</label>
+                            <select id="classSelector" onchange="switchClass()"></select>
+                            <button class="btn btn-secondary" onclick="addNewClass()">+ Kelas Baru</button>
+                            <span class="separator-v"></span>
+                            <button class="btn btn-success" onclick="openModal()">+ Tambah Siswa</button>
+                            <div class="dropdown">
+                                <button id="mainDeleteBtn" class="btn btn-danger">🗑️ Hapus</button>
+                                <div id="deleteDropdownContent" class="dropdown-content">
+                                    <a href="#" id="deleteSelectedLink">Hapus yang Dipilih</a>
+                                    <a href="#" id="deleteAllLink">Hapus Semua</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="action-group">
+                            <label for="sortOrder">Urutan Ranking:</label>
+                            <select id="sortOrder">
+                                <option value="desc">Tertinggi ke Terendah</option>
+                                <option value="asc">Terendah ke Tertinggi</option>
+                            </select>
+                            <button class="btn" onclick="processRanking()">🚀 Proses Ranking</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="student-table-wrapper">
+                    <table class="student-table">
+                        <thead>
+                            <tr>
+                                <th class="checkbox-cell"><input type="checkbox" id="selectAllCheckbox" title="Pilih Semua"></th>
+                                <th>No.</th>
+                                <th>Nama Siswa</th>
+                                <th>Kelas</th>
+                                <th>Nilai</th>
+                                <th>Sikap</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="studentTableBody">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="resultsSection" class="results hidden">
+                <div class="result-card">
+                    <div class="card-header">
+                        🏆 Tabel Ranking Siswa
+                    </div>
+                    <div class="card-body">
+                        <div style="overflow-x: auto;">
+                            <table class="ranking-table">
+                                <thead>
+                                    <tr>
+                                        <th>Peringkat</th>
+                                        <th>Nama</th>
+                                        <th>Kelas</th>
+                                        <th>Nilai</th>
+                                        <th>Sikap</th>
+                                        <th>Prestasi</th>
+                                        <th>Tingkat</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="rankingTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="results-grid">
+                    <div class="result-card">
+                        <div class="card-header">
+                            📈 Statistik Nilai
+                        </div>
+                        <div class="card-body">
+                            <div class="stats-grid">
+                                <div class="stat-card">
+                                    <div id="avgScore" class="stat-value">0</div>
+                                    <div class="stat-label">Rata-rata</div>
+                                </div>
+                                <div class="stat-card">
+                                    <div id="maxScore" class="stat-value">0</div>
+                                    <div class="stat-label">Tertinggi</div>
+                                </div>
+                                <div class="stat-card">
+                                    <div id="minScore" class="stat-value">0</div>
+                                    <div class="stat-label">Terendah</div>
+                                </div>
+                                <div class="stat-card">
+                                    <div id="totalStudents" class="stat-value">0</div>
+                                    <div class="stat-label">Total Siswa</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="result-card">
+                        <div class="card-header">
+                            🔍 Cari Peringkat Siswa
+                        </div>
+                        <div class="card-body">
+                            <div class="search-section">
+                                <label for="searchName">Masukkan nama siswa:</label>
+                                <div class="search-row">
+                                    <input type="text" id="searchName" placeholder="Contoh: Ahmad Budi">
+                                    <button class="btn" onclick="searchStudent()">Cari</button>
+                                    <button class="btn btn-secondary" onclick="clearSearch()">Clear</button>
+                                </div>
+                                <div id="searchResult"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="studentModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Tambah Data Siswa</h2>
+                <span class="close-btn" onclick="closeModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="editIndex" value="-1">
+                
+                <div class="modal-form-group">
+                    <label for="studentName">Nama Lengkap Siswa</label>
+                    <input type="text" id="studentName" placeholder="Masukkan nama lengkap">
+                </div>
+                <div class="modal-form-grid">
+                    <div class="modal-form-group">
+                        <label for="studentScore">Nilai Akademik</label>
+                        <input type="number" id="studentScore" placeholder="0-100" min="0" max="100" step="0.01">
+                    </div>
+                     <div class="modal-form-group">
+                        <label for="studentSikap">Sikap / Prilaku</label>
+                        <select id="studentSikap">
+                            <option value="A">A (Sangat Baik)</option>
+                            <option value="B">B (Baik)</option>
+                            <option value="C">C (Cukup)</option>
+                            <option value="D">D (Kurang)</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <hr class="separator">
+                <p class="prestasi-title"><b>Data Prestasi (Non-Akademik)</b> - Opsional</p>
+
+                <div class="modal-form-group">
+                    <label for="studentPrestasi">Nama Prestasi</label>
+                    <input type="text" id="studentPrestasi" placeholder="Contoh: Olimpiade Matematika">
+                </div>
+                <div class="modal-form-grid">
+                    <div class="modal-form-group">
+                        <label for="studentJuara">Peringkat Juara</label>
+                        <select id="studentJuara">
+                            <option value="">- Belum Juara -</option>
+                            <option value="1">Juara 1</option>
+                            <option value="2">Juara 2</option>
+                            <option value="3">Juara 3</option>
+                        </select>
+                    </div>
+                    <div class="modal-form-group">
+                        <label for="studentTingkat">Tingkat Kompetisi</label>
+                        <select id="studentTingkat">
+                            <option value="">- Tidak Ada -</option>
+                            <option value="kabupaten">Kabupaten</option>
+                            <option value="provinsi">Provinsi</option>
+                            <option value="nasional">Nasional</option>
+                            <option value="internasional">Internasional</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal()">Batal</button>
+                <button class="btn" onclick="saveStudent()">Simpan Data</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="Script.js"></script>
+</body>
+</html>
